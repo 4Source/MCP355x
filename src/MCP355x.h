@@ -1,7 +1,7 @@
 //----------------------------------------------------
 // File:  MCP355x.h
-// Version:   v0.1.0
-// Change date: 15.07.2021
+// Version:   v0.1.1
+// Change date: 25.09.2021
 // Autor:     4Source
 // Homepage:  github.com/4Source
 //----------------------------------------------------
@@ -19,7 +19,7 @@ class MCP355x {
 		
 		uint8_t mode_CONVERSION;		//HIGH: Single Conversion Mode || LOW: Continuous Conversion Mode
 		uint8_t mode_SPI;
-		uint8_t mode_SPI_SPEED;
+		uint32_t mode_SPI_SPEED;
 		
 		uint8_t state_READY;
 		
@@ -30,7 +30,7 @@ class MCP355x {
 		} c ;
 
 	public:
-		MCP355x(uint8_t, uint8_t, uint8_t, uint8_t, uint8_t);
+		MCP355x(uint8_t, uint8_t, uint8_t, uint8_t, uint32_t);
 		
 		void begin();
 		void end();

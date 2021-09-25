@@ -1,21 +1,19 @@
 //----------------------------------------------------
 // File:  MCP355x.cpp
-// Version:   v0.1.0
-// Change date: 15.07.2021
+// Version:   v0.1.1
+// Change date: 25.09.2021
 // Autor:     4Source
 // Homepage:  github.com/4Source
 //----------------------------------------------------
 #include "MCP355x.h"
 
-MCP355x::MCP355x(uint8_t cs, uint8_t sdo, uint8_t conversionMode, uint8_t spiMode, uint8_t spiClockSpeed){
+MCP355x::MCP355x(uint8_t cs, uint8_t sdo, uint8_t conversionMode, uint8_t spiMode, uint32_t spiClockSpeed){
 	//Save Values
 	pin_CS = cs;
 	pin_SDO = sdo;	
 	mode_CONVERSION = conversionMode;
 	mode_SPI = spiMode;
-	mode_SPI_SPEED = spiClockSpeed;
-	if(mode_SPI_SPEED > 5000000) mode_SPI_SPEED = 5000000;
-	
+	mode_SPI_SPEED = min(spiClockSpeed, 5000000);
 	
 	//Setup PINs
 	pinMode(pin_SDO, INPUT);  					//SDO as Input
@@ -49,12 +47,16 @@ bool MCP355x::checkState(){
 		SPI.beginTransaction(SPISettings(mode_SPI_SPEED, MSBFIRST, mode_SPI));
 		digitalWrite(pin_CS, LOW);	
 		
-		if(mode_SPI == SPI_MODE0){			//Read Data with SPI_MODE0
-			c.bytes[3] = SPI.transfer(0x00);	
+		if(mode_SPI == SPI_MODE0){				//Read Data with SPI_MODE0
+			c.bytes[3] = SPI.transfer(0x00);
 			c.bytes[2] = SPI.transfer(0x00);
 			c.bytes[1] = SPI.transfer(0x00);
 			c.bytes[0] = SPI.transfer(0x00);
 			c.value >>= 7;
+			
+			if((c.bytes[3] & (1 << 5)) || (c.bytes[3] & (1 << 6))){		//Check OVL | OVH 
+				
+			}
 		}
 		else if(mode_SPI == SPI_MODE3){			//Read Data with SPI_MODE3
 			c.bytes[2] = SPI.transfer(0x00);
@@ -64,7 +66,9 @@ bool MCP355x::checkState(){
 			c.bytes[3] = 0x00;
 		}
 		
-		if(mode_CONVERSION == HIGH) digitalWrite(pin_CS, HIGH);				//Go Shutdown
+		if(mode_CONVERSION == HIGH){
+			digitalWrite(pin_CS, HIGH);			//Go Shutdown
+		}
 		SPI.endTransaction();
 		state_READY = true;
 	}
